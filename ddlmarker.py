@@ -40,6 +40,11 @@ class DDLMarker:
         
         # 窗口关闭时保存数据
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        
+        # 初始化任务专属提醒设置（为现有任务添加默认设置）
+        for task in self.tasks:
+            if "reminders" not in task:
+                task["reminders"] = []
     
     def load_data(self):
         """加载任务和标签数据"""
@@ -66,6 +71,25 @@ class DDLMarker:
                     task["due_date"] = datetime.fromisoformat(task["due_date"])
                 except:
                     pass
+            
+            # 确保任务有reminders字段
+            if "reminders" not in task:
+                task["reminders"] = []
+            
+            # 转换reminders中的时间单位为英文（如果是中文的话）
+            updated_reminders = []
+            for reminder in task["reminders"]:
+                if len(reminder) == 3:
+                    value, unit, text = reminder
+                    # 转换中文单位
+                    if unit == "分钟":
+                        unit = "minutes"
+                    elif unit == "小时":
+                        unit = "hours"
+                    elif unit == "天":
+                        unit = "days"
+                    updated_reminders.append((value, unit, text))
+            task["reminders"] = updated_reminders
     
     def save_data(self):
         """保存任务和标签数据"""
@@ -302,13 +326,14 @@ class DDLMarker:
         # 获取选中的标签
         selected_tag = self.tag_var.get()
         
-        # 创建新任务
+        # 创建新任务，包含空的reminders列表
         new_task = {
             "name": task_name,
             "due_date": due_date,
             "tag": selected_tag,
             "completed": False,
-            "created_at": datetime.now()
+            "created_at": datetime.now(),
+            "reminders": []
         }
         
         self.tasks.append(new_task)
@@ -381,9 +406,130 @@ class DDLMarker:
         for tag in self.tags:
             ttk.Radiobutton(tag_frame, text=tag, variable=tag_var, value=tag).pack(side=tk.LEFT, padx=5)
         
+        # 提醒设置区域
+        reminder_frame = ttk.LabelFrame(edit_window, text="提醒设置")
+        reminder_frame.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky=tk.W+tk.E)
+        
+        # 提醒设置状态
+        reminder_var = tk.BooleanVar(value=len(task.get("reminders", [])) > 0)
+        
+        def toggle_reminder_settings():
+            if reminder_var.get():
+                reminder_settings_frame.pack(fill=tk.X, padx=10, pady=5)
+            else:
+                reminder_settings_frame.pack_forget()
+                task["reminders"] = []
+        
+        ttk.Checkbutton(reminder_frame, text="使用自定义提醒设置", variable=reminder_var, command=toggle_reminder_settings).pack(anchor=tk.W, padx=5, pady=5)
+        
+        # 提醒设置选项
+        reminder_settings_frame = ttk.Frame(reminder_frame)
+        
+        # 复制任务当前的提醒设置
+        task_reminders = task.get("reminders", [])
+        temp_reminders = task_reminders.copy()
+        
+        # 提醒列表显示
+        reminder_list_frame = ttk.Frame(reminder_settings_frame)
+        reminder_list_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        def update_reminder_list_display():
+            # 清空现有列表
+            for widget in reminder_list_frame.winfo_children():
+                widget.destroy()
+            
+            # 显示当前提醒设置
+            for i, (value, unit, text) in enumerate(temp_reminders):
+                item_frame = ttk.Frame(reminder_list_frame)
+                item_frame.pack(fill=tk.X, pady=2)
+                
+                ttk.Label(item_frame, text=text, width=20).pack(side=tk.LEFT, padx=5)
+                ttk.Button(item_frame, text="删除", command=lambda idx=i: remove_reminder(idx)).pack(side=tk.RIGHT, padx=5)
+        
+        def remove_reminder(index):
+            temp_reminders.pop(index)
+            update_reminder_list_display()
+        
+        # 添加提醒选项
+        add_reminder_frame = ttk.Frame(reminder_settings_frame)
+        add_reminder_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(add_reminder_frame, text="提前量：").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+        reminder_value_var = tk.StringVar()
+        reminder_value_entry = ttk.Entry(add_reminder_frame, textvariable=reminder_value_var, width=5)
+        reminder_value_entry.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
+        
+        reminder_unit_var = tk.StringVar(value="分钟")
+        reminder_unit_frame = ttk.Frame(add_reminder_frame)
+        reminder_unit_frame.grid(row=0, column=2, padx=5, pady=5, sticky=tk.W)
+        
+        ttk.Radiobutton(reminder_unit_frame, text="分钟", variable=reminder_unit_var, value="分钟").pack(side=tk.LEFT, padx=5)
+        ttk.Radiobutton(reminder_unit_frame, text="小时", variable=reminder_unit_var, value="小时").pack(side=tk.LEFT, padx=5)
+        ttk.Radiobutton(reminder_unit_frame, text="天", variable=reminder_unit_var, value="天").pack(side=tk.LEFT, padx=5)
+        
+        def add_reminder():
+            try:
+                value = int(reminder_value_var.get())
+                if value <= 0:
+                    messagebox.showwarning("警告", "提前量必须大于0！")
+                    return
+                
+                unit = reminder_unit_var.get()
+                if unit == "分钟":
+                    reminder = (value, "minutes", f"提前{value}分钟")
+                elif unit == "小时":
+                    reminder = (value, "hours", f"提前{value}小时")
+                else:  # 天
+                    reminder = (value, "days", f"提前{value}天")
+                
+                if reminder not in temp_reminders:
+                    temp_reminders.append(reminder)
+                    update_reminder_list_display()
+                    reminder_value_var.set("")  # 清空输入框
+                else:
+                    messagebox.showinfo("提示", "该提醒已存在！")
+            except ValueError:
+                messagebox.showwarning("警告", "请输入有效的数字！")
+        
+        ttk.Button(add_reminder_frame, text="添加", command=add_reminder).grid(row=0, column=3, padx=5, pady=5)
+        
+        # 快捷提醒按钮
+        quick_reminder_frame = ttk.LabelFrame(reminder_settings_frame, text="快捷添加")
+        quick_reminder_frame.pack(fill=tk.X, pady=5)
+        
+        quick_buttons = [
+            (10, "分钟", "提前10分钟"),
+            (30, "分钟", "提前30分钟"),
+            (1, "小时", "提前1小时"),
+            (3, "小时", "提前3小时"),
+            (1, "天", "提前1天")
+        ]
+        
+        for value, unit, text in quick_buttons:
+            def create_quick_button_cmd(v=value, u=unit, t=text):
+                def cmd():
+                    if u == "分钟":
+                        reminder = (v, "minutes", t)
+                    elif u == "小时":
+                        reminder = (v, "hours", t)
+                    else:  # 天
+                        reminder = (v, "days", t)
+                    
+                    if reminder not in temp_reminders:
+                        temp_reminders.append(reminder)
+                        update_reminder_list_display()
+                return cmd
+            
+            ttk.Button(quick_reminder_frame, text=text, command=create_quick_button_cmd()).pack(side=tk.LEFT, padx=5, pady=5)
+        
+        # 初始化提醒设置显示
+        if reminder_var.get():
+            update_reminder_list_display()
+            reminder_settings_frame.pack(fill=tk.X, padx=10, pady=5)
+        
         # 按钮
         button_frame = ttk.Frame(edit_window)
-        button_frame.grid(row=3, column=0, columnspan=2, pady=10)
+        button_frame.grid(row=4, column=0, columnspan=2, pady=10)
         
         def save_changes():
             new_name = task_entry.get().strip()
@@ -402,6 +548,12 @@ class DDLMarker:
             task["name"] = new_name
             task["due_date"] = new_date
             task["tag"] = new_tag
+            
+            # 更新提醒设置
+            if reminder_var.get():
+                task["reminders"] = temp_reminders
+            else:
+                task["reminders"] = []
             
             self.save_data()
             self.update_task_list()
@@ -718,18 +870,25 @@ class DDLMarker:
                     continue  # 已经过期
                 
                 # 检查是否需要提醒
-                for value, unit, text in self.custom_reminders:
-                    if unit == "days":
-                        reminder_time = due_date - timedelta(days=value)
-                    elif unit == "hours":
-                        reminder_time = due_date - timedelta(hours=value)
-                    else:  # minutes
-                        reminder_time = due_date - timedelta(minutes=value)
-                    
-                    # 检查是否在提醒时间范围内（5分钟内）
-                    time_diff = now - reminder_time
-                    if 0 <= time_diff.total_seconds() <= 300:  # 5分钟内
-                        tasks_to_remind.append((task, text))
+            # 优先使用任务专属的提醒设置
+            if task.get("reminders"):
+                reminders_to_check = task["reminders"]
+            else:
+                # 如果没有任务专属提醒，则使用全局设置
+                reminders_to_check = self.custom_reminders
+                
+            for value, unit, text in reminders_to_check:
+                if unit == "days":
+                    reminder_time = due_date - timedelta(days=value)
+                elif unit == "hours":
+                    reminder_time = due_date - timedelta(hours=value)
+                else:  # minutes
+                    reminder_time = due_date - timedelta(minutes=value)
+                
+                # 检查是否在提醒时间范围内（5分钟内）
+                time_diff = now - reminder_time
+                if 0 <= time_diff.total_seconds() <= 300:  # 5分钟内
+                    tasks_to_remind.append((task, text))
             
             # 显示提醒
             for task, reminder_text in tasks_to_remind:

@@ -12,7 +12,7 @@ class DDLMarker:
     def __init__(self, root):
         self.root = root
         self.root.title("DDL Marker")
-        self.root.geometry("500x700")
+        self.root.geometry("650x700")
         self.root.attributes('-topmost', True)
         self.root.configure(bg="#f0f0f0")
         
@@ -217,11 +217,14 @@ class DDLMarker:
                 self.task_tree.item(item_id, tags=("overdue",))
             elif time_diff.total_seconds() <= 86400:  # 24小时内
                 self.task_tree.item(item_id, tags=("urgent",))
+            else:
+                self.task_tree.item(item_id, tags=("default",))  # 普通状态任务应用默认样式
         
         # 配置标签样式
-        self.task_tree.tag_configure("completed", foreground="#888888", font=("SimHei", 10, "italic"))
-        self.task_tree.tag_configure("overdue", foreground="#ff0000", font=("SimHei", 10, "bold"))
-        self.task_tree.tag_configure("urgent", foreground="#ff8c00", font=("SimHei", 10))
+        self.task_tree.tag_configure("default", font=("SimHei", 12))  # 普通状态字体
+        self.task_tree.tag_configure("completed", foreground="#888888", font=("SimHei", 12, "italic"))
+        self.task_tree.tag_configure("overdue", foreground="#ff0000", font=("SimHei", 12, "bold"))
+        self.task_tree.tag_configure("urgent", foreground="#ff8c00", font=("SimHei", 12))
         
         # 绑定双击事件
         self.task_tree.bind("<Double-1>", self.on_task_double_click)
@@ -381,7 +384,7 @@ class DDLMarker:
         # 创建编辑对话框
         edit_window = tk.Toplevel(self.root)
         edit_window.title("编辑任务")
-        edit_window.geometry("350x250")
+        edit_window.geometry("450x250")
         edit_window.resizable(False, False)
         edit_window.configure(bg="#f0f0f0")
         

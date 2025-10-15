@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 import threading
 import time
 from tkinter import scrolledtext
+import winshell
+from win32com.client import Dispatch
 
 class DDLMarker:
     def __init__(self, root):
@@ -25,6 +27,9 @@ class DDLMarker:
             (1, "hours", "提前1小时"),
             (1, "days", "提前1天")
         ]
+        
+        # 开机自启动设置默认值
+        self.startup_enabled = False
         
         # 数据存储
         self.data_file = "ddl_data.json"
@@ -59,10 +64,12 @@ class DDLMarker:
                 self.tasks = []
                 self.tags = ["学习", "工作", "生活", "其他"]
                 self.custom_reminders = self.default_reminders
+                self.startup_enabled = data.get("startup_enabled", False)
         else:
             self.tasks = []
             self.tags = ["学习", "工作", "生活", "其他"]
             self.custom_reminders = self.default_reminders
+            self.startup_enabled = False
         
         # 解析和验证任务日期
         for task in self.tasks:
@@ -96,7 +103,8 @@ class DDLMarker:
         data = {
             "tasks": [],
             "tags": self.tags,
-            "reminders": self.custom_reminders
+            "reminders": self.custom_reminders,
+            "startup_enabled": self.startup_enabled
         }
         
         # 转换日期为字符串格式
@@ -150,6 +158,19 @@ class DDLMarker:
         # 提醒设置按钮
         self.reminder_button = ttk.Button(input_frame, text="提醒设置", command=self.manage_reminders)
         self.reminder_button.grid(row=3, column=2, pady=10)
+        
+        # 开机自启动选项
+        settings_frame = ttk.Frame(self.root, padding="10")
+        settings_frame.pack(fill=tk.X)
+        
+        self.startup_var = tk.BooleanVar(value=self.startup_enabled)
+        self.startup_checkbox = ttk.Checkbutton(
+            settings_frame, 
+            text="开机自启动", 
+            variable=self.startup_var, 
+            command=self.toggle_startup
+        )
+        self.startup_checkbox.pack(anchor=tk.W)
         
         # 任务列表区域
         list_frame = ttk.Frame(self.root, padding="10")
@@ -650,6 +671,56 @@ class DDLMarker:
         x = (tag_window.winfo_screenwidth() // 2) - (width // 2)
         y = (tag_window.winfo_screenheight() // 2) - (height // 2)
         tag_window.geometry('{}x{}+{}+{}'.format(width, height, x, y))
+    
+    def toggle_startup(self):
+        """切换开机自启动状态"""
+        try:
+            if self.startup_enabled:
+                # 禁用开机自启动
+                self._remove_startup()
+                self.startup_enabled = False
+                self.startup_checkbox.configure(state=tk.NORMAL)
+                messagebox.showinfo("成功", "已取消开机自启动设置")
+            else:
+                # 启用开机自启动
+                self._add_startup()
+                self.startup_enabled = True
+                self.startup_checkbox.configure(state=tk.NORMAL)
+                messagebox.showinfo("成功", "已设置开机自启动")
+        except Exception as e:
+            messagebox.showerror("错误", f"设置开机自启动时出错: {str(e)}")
+        
+        # 保存设置
+        self.save_data()
+    
+    def _add_startup(self):
+        """添加开机自启动快捷方式"""
+        # 获取启动文件夹路径
+        startup_folder = winshell.startup()
+        
+        # 获取当前脚本或批处理文件的路径
+        if os.path.exists("启动DDLMarker.bat"):
+            # 使用批处理文件
+            target_path = os.path.abspath("启动DDLMarker.bat")
+        else:
+            # 使用Python脚本
+            target_path = os.path.abspath(__file__)
+        
+        # 创建快捷方式
+        shortcut_path = os.path.join(startup_folder, "DDLMarker.lnk")
+        shell = Dispatch('WScript.Shell')
+        shortcut = shell.CreateShortCut(shortcut_path)
+        shortcut.Targetpath = target_path
+        shortcut.WorkingDirectory = os.path.dirname(target_path)
+        shortcut.IconLocation = target_path
+        shortcut.save()
+    
+    def _remove_startup(self):
+        """移除开机自启动快捷方式"""
+        startup_folder = winshell.startup()
+        shortcut_path = os.path.join(startup_folder, "DDLMarker.lnk")
+        if os.path.exists(shortcut_path):
+            os.remove(shortcut_path)
     
     def manage_reminders(self):
         """管理提醒设置"""

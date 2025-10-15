@@ -1,0 +1,2 @@
+winshell
+pywin32

@@ -4,36 +4,129 @@
       "name": "项目报告",
       "due_date": "2025-10-04T00:27:00",
       "tag": "工作",
-      "completed": false,
-      "created_at": "2025-10-03T23:04:20.553146"
+      "completed": true,
+      "created_at": "2025-10-03T23:04:20.553146",
+      "reminders": []
     },
     {
       "name": "计组作业",
-      "due_date": "2025-10-04T18:00:00",
+      "due_date": "2025-10-07T21:00:00",
       "tag": "学习",
-      "completed": false,
-      "created_at": "2025-10-03T23:04:20.553251"
+      "completed": true,
+      "created_at": "2025-10-03T23:04:20.553251",
+      "reminders": []
     },
     {
-      "name": "学生节节目",
-      "due_date": "2025-10-05T23:59:00",
+      "name": "学生节预算表",
+      "due_date": "2025-10-10T23:59:00",
       "tag": "其他",
       "completed": false,
-      "created_at": "2025-10-03T23:04:20.553285"
+      "created_at": "2025-10-03T23:04:20.553285",
+      "reminders": []
     },
     {
       "name": "实践成果包提交",
       "due_date": "2025-10-04T18:00:00",
       "tag": "其他",
-      "completed": false,
-      "created_at": "2025-10-03T23:04:20.553298"
+      "completed": true,
+      "created_at": "2025-10-03T23:04:20.553298",
+      "reminders": []
     },
     {
-      "name": "111",
-      "due_date": "2025-10-04T14:30:00",
-      "tag": "生活",
+      "name": "网原HW1",
+      "due_date": "2025-10-15T22:00:00",
+      "tag": "学习",
       "completed": false,
-      "created_at": "2025-10-03T23:19:38.162557"
+      "created_at": "2025-10-05T23:33:25.350969",
+      "reminders": []
+    },
+    {
+      "name": "综奖答辩材料",
+      "due_date": "2025-10-06T22:00:00",
+      "tag": "其他",
+      "completed": true,
+      "created_at": "2025-10-05T23:33:25.351020",
+      "reminders": []
+    },
+    {
+      "name": "叔蘋申请邮寄",
+      "due_date": "2025-10-17T12:00:00",
+      "tag": "其他",
+      "completed": false,
+      "created_at": "2025-10-05T23:33:25.351047",
+      "reminders": []
+    },
+    {
+      "name": "FLA HW2",
+      "due_date": "2025-10-14T22:00:00",
+      "tag": "学习",
+      "completed": false,
+      "created_at": "2025-10-05T23:33:25.351071",
+      "reminders": []
+    },
+    {
+      "name": "项目分活",
+      "due_date": "2025-10-09T21:59:00",
+      "tag": "工作",
+      "completed": false,
+      "created_at": "2025-10-09T20:35:29.057747",
+      "reminders": []
+    },
+    {
+      "name": "数值分析",
+      "due_date": "2025-10-12T23:59:00",
+      "tag": "学习",
+      "completed": false,
+      "created_at": "2025-10-09T20:35:29.057776",
+      "reminders": []
+    },
+    {
+      "name": "预处理环境数据集",
+      "due_date": "2025-10-09T23:59:00",
+      "tag": "工作",
+      "completed": true,
+      "created_at": "2025-10-09T20:35:29.057792",
+      "reminders": []
+    },
+    {
+      "name": "学生节舞监表",
+      "due_date": "2025-10-12T23:59:00",
+      "tag": "其他",
+      "completed": false,
+      "created_at": "2025-10-09T20:42:08.391548",
+      "reminders": []
+    },
+    {
+      "name": "学生节视频剪辑（可延期）",
+      "due_date": "2025-10-12T23:59:00",
+      "tag": "其他",
+      "completed": false,
+      "created_at": "2025-10-09T20:42:55.711115",
+      "reminders": []
+    },
+    {
+      "name": "叔蘋填写",
+      "due_date": "2025-10-10T23:59:00",
+      "tag": "其他",
+      "completed": false,
+      "created_at": "2025-10-09T20:45:05.791523",
+      "reminders": []
+    },
+    {
+      "name": "第一批可标注数据（10个属性）",
+      "due_date": "2025-10-15T23:59:00",
+      "tag": "工作",
+      "completed": false,
+      "created_at": "2025-10-09T20:45:38.342367",
+      "reminders": []
+    },
+    {
+      "name": "第一批可标注数据代码",
+      "due_date": "2025-10-13T23:59:00",
+      "tag": "工作",
+      "completed": false,
+      "created_at": "2025-10-09T20:46:28.433905",
+      "reminders": []
     }
   ],
   "tags": [
@@ -58,5 +151,6 @@
       "minutes",
       "提前10分钟"
     ]
-  ]
+  ],
+  "startup_enabled": false
 }
